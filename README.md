@@ -16,11 +16,11 @@ ls ./path/to/input/* > filelist
 Sequence must be in FASTA format. Each genome must be in its own FASTA file.
 There can be multiple header in each FASTA file
 
->Read1
+\>Read1
 ATAGTAGATGAT..
->Read2
+\>Read2
 ATAGTAGATGAT..
->Read3
+\>Read3
 ATGATGATGATGATG..
 ..
          
