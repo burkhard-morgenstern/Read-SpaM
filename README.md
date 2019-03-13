@@ -1,7 +1,7 @@
 # Read-SpaM
 
 
-Usage: ./fswm [options] <filelist>
+Usage: ./fswm [options] \<filelist\>
 
 format:
         <filelist>: A plain text file, specifying the relative path to each input dataset.
