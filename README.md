@@ -55,7 +55,12 @@ https://www.biorxiv.org/content/10.1101/550632v1
 
 ### Paper Abstract:
 ```
-In many fields of biomedical research, it is important to estimate phylogenetic distances between taxa based on low-coverage sequencing reads. Major applications are, for example, phylogeny reconstruction, species identification from small sequencing samples, or bacterial strain typing in medical diagnostics. Herein, we adapt our previously developed software program Filtered Spaced-Word Matches (FSWM) for alignment-free phylogeny reconstruction to work on unassembled reads; we call this implementation Read-SpaM. Test runs on simulated reads from bacterial genomes show that our approach can estimate phylogenetic distances with high accuracy, even for large evolutionary distances and for very low sequencing coverage.
+In many fields of biomedical research, it is important to estimate phylogenetic distances between taxa based on low-coverage sequencing reads. Major applications are, for 
+example, phylogeny reconstruction, species identification from small sequencing samples, or bacterial strain typing in medical diagnostics. Herein, we adapt our previously 
+developed software program Filtered Spaced-Word Matches (FSWM) for alignment-free phylogeny reconstruction to work on unassembled reads; we call this implementation 
+Read-SpaM. Test runs on simulated reads from bacterial genomes show that our approach can estimate phylogenetic distances with high accuracy, even for large evolutionary 
+distances and for very low sequencing coverage.
+
 ```
 
 ### Contact:
