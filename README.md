@@ -21,10 +21,10 @@ This will list each file in specified directory, one file per line.
 ### Options
 ```
         -h: print this help and exit
-        -k \<integer\>: pattern weight (default 12)
-        -l \<integer\>: don't care positions (default 100)
-        -t \<integer\>: numer of threads (default: 10)
-        -s \<integer\>: the minimum score of a spaced-word match to be considered homologous (default: 0)
+        -k <integer>: pattern weight (default 12)
+        -l <integer>: don't care positions (default 100)
+        -t <integer>: numer of threads (default: 10)
+        -s <integer>: the minimum score of a spaced-word match to be considered homologous (default: 0)
 ```
 
 ### Sequence format:
@@ -59,4 +59,4 @@ In many fields of biomedical research, it is important to estimate phylogenetic 
 ```
 
 ### Contact:
-bmorgen@gwdg.de
+bmorgen (at) gwdg.de
