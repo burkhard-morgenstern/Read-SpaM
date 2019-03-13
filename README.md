@@ -4,7 +4,7 @@
 Usage: ./fswm [options] \<filelist\>
 
 format:
-        <filelist>: A plain text file, specifying the relative path to each input dataset.
+        \<filelist\>: A plain text file, specifying the relative path to each input dataset.
 
                     To create the filelist simply run:
 
@@ -25,10 +25,10 @@ format:
          
 Options:
          -h: print this help and exit
-         -k <integer>: pattern weight (default 12)
-         -l <integer>: don't care positions (default 100)
-         -t <integer>: numer of threads (default: 10)
-         -s <integer>: the minimum score of a spaced-word match to be considered homologous (default: 0)
+         -k \<integer\>: pattern weight (default 12)
+         -l \<integer\>: don't care positions (default 100)
+         -t \<integer\>: numer of threads (default: 10)
+         -s \<integer\>: the minimum score of a spaced-word match to be considered homologous (default: 0)
 
 
 Publication: https://www.biorxiv.org/content/10.1101/550632v1
