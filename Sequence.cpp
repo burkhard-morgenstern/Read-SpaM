@@ -1,4 +1,5 @@
 #include "Sequence.h"
+#include "Crc32.h"
 
 Sequence::Sequence(std::string header, std::string & seqLine)
 {
@@ -95,6 +96,69 @@ void Sequence::sortFirstBits(Seed & s)
   	{
     	sortedWords[prefixSum[firstBits[i]]++] = Word(i,0);
   	}
+}
+
+void Sequence::sortFirstBits(Seed& seed, double ratio, bool reverse)
+{
+    std::vector<char>& sequence = reverse ? seqRev : seq;
+    std::vector<Word>& words = reverse ? sortedWordsRev : sortedWords;
+    std::vector<uint32_t>& buckets = reverse ? firstBucketsRev : firstBuckets;
+
+    uint32_t totalWords = sequence.size() - seed.getLength() + 1;
+    uint32_t expectedWordCount = (uint32_t) (totalWords * ratio);
+
+    uint32_t wordCounter = 0;
+    std::vector<Word> unsortedWords;
+    std::vector<uint32_t> bucketCounts(MAX_BUCKETS, 0);
+
+    unsortedWords.reserve(expectedWordCount);
+
+    // size of Word.key
+    size_t numBytes = sizeof(uint64_t);
+    uint32_t threshold =
+            (uint32_t) (std::numeric_limits<uint32_t>::max() * ratio);
+
+    // generate words
+    for (int32_t pos = 0; pos < totalWords; pos++)
+    {
+        unsigned char w = 0;
+        seed.getFirstWord(w, &sequence[pos]);
+        uint32_t next = 0;
+        seed.getNextWord(next, &sequence[pos]);
+
+        uint64_t all = ((static_cast<uint64_t>(w)) << 32) | next;
+
+        if (crc32_fast(&all, numBytes) > threshold) {
+            continue;
+        }
+
+        unsortedWords.emplace_back(pos, w);
+
+        ++wordCounter;
+        ++bucketCounts[w];
+    }
+
+    // accumulate sum to get bucket boundaries
+    uint32_t t = 0;
+
+    for (uint32_t i = 0; i < MAX_BUCKETS; i++)
+    {
+        std::swap(bucketCounts[i], t);
+        t += bucketCounts[i];
+    }
+
+    buckets = bucketCounts;
+    buckets.push_back(wordCounter);
+
+    // sorting by first bits (side effect: sorting by pos as well)
+    words.resize(wordCounter);
+
+    for (int32_t i = 0; i < wordCounter; i++)
+    {
+        Word& word = unsortedWords[i];
+        uint32_t index = bucketCounts[word.key]++;
+        words[index].pos = word.pos;
+    }
 }
 
 void Sequence::sortFirstBitsRev(Seed & s)

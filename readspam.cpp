@@ -45,6 +45,7 @@ void printHelp(){
     "\n\t -l <integer>: don't care positions (default 100)"
     "\n\t -t <integer>: numer of threads (default: 10)"
     "\n\t -s <integer>: the minimum score of a spaced-word match to be considered homologous (default: 0)"
+    "\n\t -r <float>:   ratio used for MinHash sampling"
     "\n";
 	std::cout << help << std::endl;
 }
@@ -53,10 +54,11 @@ int weight = 12;
 int dontCare = 100;
 int threads = 10;
 int threshold = 0;
+double ratio = 1.0;
 
 void parseParameters(int argc, char *argv[]){
 	int option_char;
-	 while ((option_char = getopt (argc, argv, "l:k:t:hs:")) != -1){ 
+	 while ((option_char = getopt (argc, argv, "l:k:t:hs:r:")) != -1){
 		switch (option_char){ 
 			case 's': 
 				threshold = atoi (optarg); 
@@ -78,6 +80,14 @@ void parseParameters(int argc, char *argv[]){
 					exit (EXIT_FAILURE);
 				}
 				break;
+		    case 'r':
+                ratio = atof(optarg);
+
+                if(ratio < 0 || ratio > 1.0){
+                    std::cerr << "Ratio (-r) must be within [0, 1]!"<< std::endl;
+                    exit (EXIT_FAILURE);
+                }
+                break;
 			case 'h': 
 				printHelp();
 				exit (EXIT_SUCCESS);
@@ -134,8 +144,14 @@ int main(int argc, char *argv[]){
 	#pragma omp parallel for schedule(runtime)
 	for(int i = 0; i < sequences.size();i++)
 	{
-		sequences[i].sortFirstBits(seed);
-		sequences[i].sortFirstBitsRev(seed);
+	    if (ratio < 1.0){
+            sequences[i].sortFirstBits(seed, ratio, false);
+            sequences[i].sortFirstBits(seed, ratio, true);
+	    } else {
+            sequences[i].sortFirstBits(seed);
+            sequences[i].sortFirstBitsRev(seed);
+	    }
+
 	}
 
 	for(int i = 0; i < sequences.size(); i++)

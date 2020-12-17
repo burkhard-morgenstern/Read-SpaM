@@ -7,11 +7,12 @@
 #include <iostream> 
 
 class Word{
-	private:
-		uint32_t pos;
-		uint32_t key;
-	public:
+    public:
+        Word() = default;
 		Word(uint32_t, uint32_t);
+
+        uint32_t key;
+        uint32_t pos;
 
 		uint32_t getKey();
 		uint32_t getPos();
