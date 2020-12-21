@@ -21,8 +21,10 @@ class Seed{
 
 	public:
 
-		Seed(int32_t, int32_t );
-		void generatePattern();
+		Seed();
+		Seed(int32_t weight, int32_t dontCare);
+		Seed(int32_t weight, int32_t dontCare, int seedPattern);
+		void generatePattern(bool useSeed, int seedPattern);
 
 		int32_t getLength();
 		int32_t getWeight();

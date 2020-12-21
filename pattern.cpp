@@ -94,6 +94,26 @@ pattern::pattern(char* pattern_file, char* align_file, int size, int length, int
 	this->secure = false;
 	ReinitPattern();
 }
+
+pattern::pattern(char* pattern_file, char* align_file, int size, int length, int weight, int l_hom, int l1, int l2, double p, double q, int seed){
+	this->pattern_file = pattern_file;
+	this->align_file = align_file;
+	this->size = size;
+	this->length = length;
+	this->weight = weight;
+	this->l_hom = l_hom;
+	this->l1 = l1;
+	this->l2 = l2;
+	this->p = p;
+	this->q = q;
+	this->variance = 0;
+	this->best_variance = 0;
+	this->quiet = false;
+	this->silent = false;
+	this->secure = false;
+	generator.seed(seed);
+	ReinitPattern();
+}
 /**
  * Short constructor, sets some default vaulues, just pattern dimension is set.
  *

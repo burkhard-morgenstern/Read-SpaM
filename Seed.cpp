@@ -11,18 +11,38 @@ char Seed::score[4][4] ={{91,-114,-31,-123},
 						{1, 2, 0, 2},
 						{2, 1, 2, 0}};*/
 
+Seed::Seed() {
+	this->weight = 12;
+	this->dontCare = 100;
+	this->length = weight + dontCare;
+	generatePattern(false, 0);
+}
+
 Seed::Seed(int32_t weight, int32_t dontCare)
 {
 	this->weight=weight;
 	this->dontCare=dontCare;
 	this->length=weight+dontCare;
-	generatePattern();
+	generatePattern(false, 0);
 }
 
-void Seed::generatePattern()
+Seed::Seed(int32_t weight, int32_t dontCare, int seedPattern)
+{
+	this->weight=weight;
+	this->dontCare=dontCare;
+	this->length=weight+dontCare;
+	generatePattern(true, seedPattern);
+}
+
+void Seed::generatePattern(bool useSeed, int seedPattern)
 {
 	pattern* pattern_obj;
-	pattern_obj = new pattern(NULL, NULL, 1, weight + dontCare, weight, 10000, 10000, 10000, 0.75, 0.25);
+	if (!useSeed) {
+		pattern_obj = new pattern(NULL, NULL, 1, weight + dontCare, weight, 10000, 10000, 10000, 0.75, 0.25);
+	}
+	else {
+		pattern_obj = new pattern(NULL, NULL, 1, weight + dontCare, weight, 10000, 10000, 10000, 0.75, 0.25, seedPattern);
+	}
 	pattern_obj->ImproveSecure();
 	pattern_obj->Improve(5000);
 	std::string pattern=pattern_obj->GetBestPattern(0);

@@ -21,7 +21,7 @@
  
 void printHelp(){
  std::string help = 
-    "\nUsage: ./fswm [options] <filelist>"
+    "\nUsage: ./readspam [options] <filelist>"
     "\n"
    	"\nformat:"  
 	"\n\t	<filelist>:"
@@ -30,7 +30,7 @@ void printHelp(){
 	"\n\t 	ls ./path/to/input/* > filelist	"
 	"\n\t 	(assuming all your proteome files (*.fasta, *.faa, etc.) are stored in the input-folder.)"
 	"\n\t Sequence must be in FASTA format. Each genome must be in its own FASTA file."
-	"\n\t  There can be multiple header in each FASTA file"
+	"\n\t  There can be multiple headers in each FASTA file"
     "\n\t >Gene1"
     "\n\t ATAGTAGATGAT.."
     "\n\t >Contig2"
@@ -46,6 +46,9 @@ void printHelp(){
     "\n\t -t <integer>: numer of threads (default: 10)"
     "\n\t -s <integer>: the minimum score of a spaced-word match to be considered homologous (default: 0)"
     "\n\t -r <float>:   ratio used for MinHash sampling"
+    "\n\t -e <integer>: seed for pattern"
+    "\n\t -f <integer>: seed for min-hash sampling"
+    "\n\t -p: 			writes histogram of scores of spaced word matches to file"
     "\n";
 	std::cout << help << std::endl;
 }
@@ -55,10 +58,13 @@ int dontCare = 100;
 int threads = 10;
 int threshold = 0;
 double ratio = 1.0;
+int seedPattern = -1;
+int seedMinhash = -1;
+bool writeHistogram = false;
 
 void parseParameters(int argc, char *argv[]){
 	int option_char;
-	 while ((option_char = getopt (argc, argv, "l:k:t:hs:r:")) != -1){
+	 while ((option_char = getopt (argc, argv, "l:k:t:hs:r:e:f:p")) != -1){
 		switch (option_char){ 
 			case 's': 
 				threshold = atoi (optarg); 
@@ -88,6 +94,23 @@ void parseParameters(int argc, char *argv[]){
                     exit (EXIT_FAILURE);
                 }
                 break;
+            case 'e':
+                seedPattern = atof(optarg);
+                if (seedPattern < 0) {
+                	std::cerr << "Seed for pattern must be positive." << std::endl;
+                	exit (EXIT_FAILURE);
+                }
+                break;
+            case 'f':
+                seedMinhash = atof(optarg);
+                if (seedMinhash < 0) {
+                	std::cerr << "Seed for min-hash must be positive." << std::endl;
+                	exit (EXIT_FAILURE);
+                }
+                break;
+            case 'p': 
+				writeHistogram = true;
+				break;
 			case 'h': 
 				printHelp();
 				exit (EXIT_SUCCESS);
@@ -131,7 +154,15 @@ int main(int argc, char *argv[]){
 	}
 	parseParameters(argc,  argv);
 	std::string list(argv[argc-1]);
-	Seed seed(weight,dontCare);
+	Seed seed;
+	if (seedPattern < 0) {
+		seed = Seed(weight,dontCare);
+	}
+	else {
+		std::cout << "Using seed: " << seedPattern << std::endl;
+		seed = Seed(weight,dontCare,seedPattern);
+	}
+	
 	std::vector<Sequence> sequences = Sequence::read(list);
 	std::vector<std::vector<double> >DMat(sequences.size(), std::vector<double>(sequences.size(),0));
 	Seed::init();
@@ -145,8 +176,8 @@ int main(int argc, char *argv[]){
 	for(int i = 0; i < sequences.size();i++)
 	{
 	    if (ratio < 1.0){
-            sequences[i].sortFirstBits(seed, ratio, false);
-            sequences[i].sortFirstBits(seed, ratio, true);
+            sequences[i].sortFirstBits(seed, ratio, false, seedMinhash);
+            sequences[i].sortFirstBits(seed, ratio, true, seedMinhash);
 	    } else {
             sequences[i].sortFirstBits(seed);
             sequences[i].sortFirstBitsRev(seed);
@@ -165,7 +196,7 @@ int main(int argc, char *argv[]){
 	{
 		for(int j = i + 1; j < sequences.size(); j++)
 		{
-			DMat[i][j] = sequences[i].compareSequences(sequences[j], seed, threads, threshold);
+			DMat[i][j] = sequences[i].compareSequences(sequences[j], seed, threads, threshold, writeHistogram);
 			DMat[j][i] = DMat[i][j];
 		}
 	}

@@ -1,5 +1,7 @@
 #include "Sequence.h"
 #include "Crc32.h"
+#include <iostream>
+#include <fstream>
 
 Sequence::Sequence(std::string header, std::string & seqLine)
 {
@@ -98,7 +100,7 @@ void Sequence::sortFirstBits(Seed & s)
   	}
 }
 
-void Sequence::sortFirstBits(Seed& seed, double ratio, bool reverse)
+void Sequence::sortFirstBits(Seed& seed, double ratio, bool reverse, int seedMinhash)
 {
     std::vector<char>& sequence = reverse ? seqRev : seq;
     std::vector<Word>& words = reverse ? sortedWordsRev : sortedWords;
@@ -127,6 +129,10 @@ void Sequence::sortFirstBits(Seed& seed, double ratio, bool reverse)
         seed.getNextWord(next, &sequence[pos]);
 
         uint64_t all = ((static_cast<uint64_t>(w)) << 32) | next;
+
+        if (seedMinhash >= 0) {
+        	all += seedMinhash;
+        }
 
         if (crc32_fast(&all, numBytes) > threshold) {
             continue;
@@ -223,16 +229,24 @@ void Sequence::sortNextBits(Seed & s)
 	}
 }
 
-double Sequence::compareSequences(Sequence & qry, Seed & s, int threads, int threshold)
+double Sequence::compareSequences(Sequence & qry, Seed & s, int threads, int threshold, bool writeHistogram)
 {
+	std::ofstream histogramFile;
+	if (writeHistogram) {
+		std::string filename = this->getHeader() + qry.getHeader();
+		std::cout << "Writing histograms to file: " << filename << std::endl;
+		histogramFile.open("histograms/" + filename + ".txt");
+	}
+
 	std::vector<std::vector<uint32_t> >mismatches(threads,std::vector<uint32_t>(s.getDontCare()+1,0)); 
-	//std::vector<std::map<int32_t, int32_t> > scores(threads, std::map<int32_t, int32_t>() );
+	std::vector<std::map<int32_t, int32_t> > scores(threads, std::map<int32_t, int32_t>() );
 	#pragma omp parallel for schedule(runtime)
 	for(uint32_t i = 1; i <= MAX_BUCKETS; i++)
 	{
 		std::vector<char> dontCareRef(s.getDontCare());
 		std::vector<char> dontCareQry(s.getDontCare());
 		int tId=omp_get_thread_num();
+		// std::cout << "Calculating for thread: " << tId << std::endl;
 		int32_t score;
 		Bucket b(	sortedWords.begin() + firstBuckets[i-1], sortedWords.begin() + firstBuckets[i], qry.sortedWords.begin() + qry.firstBuckets[i-1], qry.sortedWords.begin() + qry.firstBuckets[i],
 					qry.sortedWordsRev.begin() + qry.firstBucketsRev[i-1], qry.sortedWordsRev.begin() + qry.firstBucketsRev[i]);
@@ -248,7 +262,7 @@ double Sequence::compareSequences(Sequence & qry, Seed & s, int threads, int thr
 						if(s.fillDontCareScore(dontCareQry, &qry.seq[startS2->getPos()]))
 						{	
 							score=s.getScore(dontCareRef, dontCareQry);
-							//scores[tId][score]++;
+							if (writeHistogram) { scores[tId][score]++;}
 							if(score>threshold)
 							{	
 								char mm=0;
@@ -265,7 +279,7 @@ double Sequence::compareSequences(Sequence & qry, Seed & s, int threads, int thr
 						if(s.fillDontCareScore(dontCareQry, &qry.seqRev[startS2Rev->getPos()]))
 						{
 							score=s.getScore(dontCareRef, dontCareQry);
-							//scores[tId][score]++;
+							if (writeHistogram) {scores[tId][score]++; }
 							if(score>threshold)
 							{
 								char mm=0;
@@ -297,17 +311,19 @@ double Sequence::compareSequences(Sequence & qry, Seed & s, int threads, int thr
 		}
 	}
 
-	/*for(int t = 1; t < threads;t++)
-	{
-		for(std::map<int32_t, int32_t>::iterator it = scores[t].begin(); it != scores[t].end(); it++)
+	if (writeHistogram) {
+	for(int t = 1; t < threads;t++)
 		{
-			scores[0][it->first]+=scores[t][it->second];
+			for(std::map<int32_t, int32_t>::iterator it = scores[t].begin(); it != scores[t].end(); it++)
+			{
+				scores[0][it->first]+=scores[t][it->second];
+			}
+		}
+		for(std::map<int32_t, int32_t>::iterator it = scores[0].begin(); it != scores[0].end(); it++)
+		{
+				histogramFile << it->first << " " <<  it->second << std::endl;
 		}
 	}
-	for(std::map<int32_t, int32_t>::iterator it = scores[0].begin(); it != scores[0].end(); it++)
-	{
-			std::cout << it->first << " " <<  it->second << std::endl;
-	}*/
 
 	for(int t = 1; t < threads;t++)
 	{
@@ -324,5 +340,7 @@ double Sequence::compareSequences(Sequence & qry, Seed & s, int threads, int thr
 		mm += mismatches[0][i]*i;
 		//std::cout << i << " " <<  mismatches[0][i] << std::endl;
 	}
+
+	if (writeHistogram) {histogramFile.close(); }
 	return -0.75*log(1.0-(4.0/3.0)*(mm/length));
 }

@@ -48,9 +48,9 @@ class Sequence{
 		 * Reads in first bits of words while sampling using the
 		 * specified ratio. 'reverse' specifies the strand.
 		 */
-        void sortFirstBits(Seed& seed, double ratio, bool reverse);
+        void sortFirstBits(Seed& seed, double ratio, bool reverse, int seedMinhash);
 
-		double compareSequences(Sequence &, Seed &, int, int);
+		double compareSequences(Sequence & qry, Seed & s, int threads, int threshold, bool writeHistogram);
 
 		static std::vector<Sequence> read(std::string);
 };

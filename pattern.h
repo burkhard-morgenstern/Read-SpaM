@@ -33,6 +33,7 @@ class pattern{
 		pattern();
 		pattern(char* pattern_file, char* align_file);
 		pattern(char* pattern_file, char* align_file, int size, int length, int weight, int l_hom, int l1, int l2, double p, double q);
+		pattern(char* pattern_file, char* align_file, int size, int length, int weight, int l_hom, int l1, int l2, double p, double q, int seed);
 		pattern(int size, int length, int weight);
 		~pattern();
 
