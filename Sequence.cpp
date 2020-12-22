@@ -36,7 +36,7 @@ std::vector<Sequence> Sequence::read(std::string list)
 	std::ifstream filelist(list);
 	if (!filelist.is_open())
 	{
-    	perror("error while opening list file");
+    	std::cerr << "Error while opening list file: " << list << std::endl;
     	exit(-1);
     }
     while (!filelist.eof())
@@ -48,7 +48,7 @@ std::vector<Sequence> Sequence::read(std::string list)
     	std::ifstream infile(file);
     	if(!infile.is_open())
 		{
-    		perror("error while opening file in list");
+    		std::cerr << "Error while opening file in list: " << file << std::endl;
     		exit(-1);
     	}
 		std::string line;
