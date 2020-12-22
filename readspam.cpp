@@ -40,7 +40,7 @@ void printHelp(){
     "\n\t .."
     "\n\t "
     "\nOptions:"        
-    "\n\t -h: print this help and exit"
+    "\n\t -h: 			print this help and exit"
     "\n\t -k <integer>: pattern weight (default 12)"
     "\n\t -l <integer>: don't care positions (default 100)"
     "\n\t -t <integer>: numer of threads (default: 10)"
@@ -49,6 +49,7 @@ void printHelp(){
     "\n\t -e <integer>: seed for pattern"
     "\n\t -f <integer>: seed for min-hash sampling"
     "\n\t -p: 			writes histogram of scores of spaced word matches to file"
+    "\n\t -o <string>:  specifies folder where output files will be placed"
     "\n";
 	std::cout << help << std::endl;
 }
@@ -61,10 +62,11 @@ double ratio = 1.0;
 int seedPattern = -1;
 int seedMinhash = -1;
 bool writeHistogram = false;
+std::string outputFolder = "";
 
 void parseParameters(int argc, char *argv[]){
 	int option_char;
-	 while ((option_char = getopt (argc, argv, "l:k:t:hs:r:e:f:p")) != -1){
+	 while ((option_char = getopt (argc, argv, "l:k:t:hs:r:e:f:po:")) != -1){
 		switch (option_char){ 
 			case 's': 
 				threshold = atoi (optarg); 
@@ -108,8 +110,11 @@ void parseParameters(int argc, char *argv[]){
                 	exit (EXIT_FAILURE);
                 }
                 break;
+            case 'o':
+                outputFolder = optarg;
+                break;
             case 'p': 
-				writeHistogram = true;
+				writeHistogram = true;				
 				break;
 			case 'h': 
 				printHelp();
@@ -143,6 +148,32 @@ void writeDmat(std::vector<std::vector<double> > dmat, std::vector<Sequence>& se
 					std::cout << std::setprecision(12) << "0" << "  ";
      	}
       		std::cout << std::endl;
+	}
+}
+
+void writeDmatToFile(std::vector<std::vector<double> > dmat, std::vector<Sequence>& sequences, std::string outputFolder){
+	std::ofstream DmatFile;
+	DmatFile.open(outputFolder + "DMat.txt");
+	DmatFile << sequences.size() << std::endl;
+	for (int i = 0; i < sequences.size(); i++) 
+	{
+		std::string name = sequences[i].getHeader();
+		for(int k = 0; k < 10; k++){
+			if(k >= name.length())
+				DmatFile << " ";
+			else
+				DmatFile << name[k];
+		}
+     	for (int j = 0; j < sequences.size(); j++) 
+     	{
+			if (i > j) 
+	    			DmatFile << std::fixed <<std::setprecision(12) << dmat[i][j] << "  ";
+			else if(j>i)
+				DmatFile << std::fixed<< std::setprecision(12) << dmat[j][i] << "  ";
+			else
+					DmatFile << std::setprecision(12) << "0" << "  ";
+     	}
+      		DmatFile << std::endl;
 	}
 }
 
@@ -196,9 +227,15 @@ int main(int argc, char *argv[]){
 	{
 		for(int j = i + 1; j < sequences.size(); j++)
 		{
-			DMat[i][j] = sequences[i].compareSequences(sequences[j], seed, threads, threshold, writeHistogram);
+			DMat[i][j] = sequences[i].compareSequences(sequences[j], seed, threads, threshold, writeHistogram, outputFolder);
 			DMat[j][i] = DMat[i][j];
 		}
 	}
-	writeDmat(DMat, sequences);
+
+	if (outputFolder == "") {
+		writeDmat(DMat, sequences);
+	}
+	else {
+		writeDmatToFile(DMat, sequences, outputFolder);
+	}
 }

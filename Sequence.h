@@ -50,7 +50,7 @@ class Sequence{
 		 */
         void sortFirstBits(Seed& seed, double ratio, bool reverse, int seedMinhash);
 
-		double compareSequences(Sequence & qry, Seed & s, int threads, int threshold, bool writeHistogram);
+		double compareSequences(Sequence & qry, Seed & s, int threads, int threshold, bool writeHistogram, std::string outputFolder);
 
 		static std::vector<Sequence> read(std::string);
 };

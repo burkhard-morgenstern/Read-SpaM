@@ -229,13 +229,12 @@ void Sequence::sortNextBits(Seed & s)
 	}
 }
 
-double Sequence::compareSequences(Sequence & qry, Seed & s, int threads, int threshold, bool writeHistogram)
+double Sequence::compareSequences(Sequence & qry, Seed & s, int threads, int threshold, bool writeHistogram, std::string outputFolder)
 {
 	std::ofstream histogramFile;
 	if (writeHistogram) {
 		std::string filename = this->getHeader() + qry.getHeader();
-		std::cout << "Writing histograms to file: " << filename << std::endl;
-		histogramFile.open("histograms/" + filename + ".txt");
+		histogramFile.open(outputFolder  + "histograms/" + filename + ".txt");
 	}
 
 	std::vector<std::vector<uint32_t> >mismatches(threads,std::vector<uint32_t>(s.getDontCare()+1,0)); 
