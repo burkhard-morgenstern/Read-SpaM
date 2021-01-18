@@ -232,13 +232,17 @@ void Sequence::sortNextBits(Seed & s)
 double Sequence::compareSequences(Sequence & qry, Seed & s, int threads, int threshold, bool writeHistogram, std::string outputFolder)
 {
 	std::ofstream histogramFile;
+	std::ofstream histogramFileMM;
 	if (writeHistogram) {
 		std::string filename = this->getHeader() + qry.getHeader();
 		histogramFile.open(outputFolder  + "histograms/" + filename + ".txt");
+		histogramFileMM.open(outputFolder  + "histograms/" + filename + "_MM.txt");
 	}
 
 	std::vector<std::vector<uint32_t> >mismatches(threads,std::vector<uint32_t>(s.getDontCare()+1,0)); 
 	std::vector<std::map<int32_t, int32_t> > scores(threads, std::map<int32_t, int32_t>() );
+	std::vector<std::map<int32_t, int32_t> > mismatches_hist(threads, std::map<int32_t, int32_t>() );
+
 	#pragma omp parallel for schedule(runtime)
 	for(uint32_t i = 1; i <= MAX_BUCKETS; i++)
 	{
@@ -262,6 +266,7 @@ double Sequence::compareSequences(Sequence & qry, Seed & s, int threads, int thr
 						{	
 							score=s.getScore(dontCareRef, dontCareQry);
 							if (writeHistogram) { scores[tId][score]++;}
+							if (writeHistogram) { mismatches_hist[tId][score]++;}
 							if(score>threshold)
 							{	
 								char mm=0;
@@ -279,6 +284,7 @@ double Sequence::compareSequences(Sequence & qry, Seed & s, int threads, int thr
 						{
 							score=s.getScore(dontCareRef, dontCareQry);
 							if (writeHistogram) {scores[tId][score]++; }
+							if (writeHistogram) {mismatches_hist[tId][score]++; }
 							if(score>threshold)
 							{
 								char mm=0;
@@ -316,11 +322,14 @@ double Sequence::compareSequences(Sequence & qry, Seed & s, int threads, int thr
 			for(std::map<int32_t, int32_t>::iterator it = scores[t].begin(); it != scores[t].end(); it++)
 			{
 				scores[0][it->first]+=scores[t][it->second];
+				mismatches_hist[0][it->first]+=mismatches_hist[t][it->second];
 			}
 		}
-		for(std::map<int32_t, int32_t>::iterator it = scores[0].begin(); it != scores[0].end(); it++)
+		std::map<int32_t, int32_t>::iterator it2 = mismatches_hist[0].begin();
+		for(std::map<int32_t, int32_t>::iterator it = scores[0].begin();  it != scores[0].end(); it++, it2++)
 		{
 				histogramFile << it->first << " " <<  it->second << std::endl;
+				histogramFileMM << it2->first << " " <<  it2->second << std::endl;
 		}
 	}
 
@@ -340,6 +349,9 @@ double Sequence::compareSequences(Sequence & qry, Seed & s, int threads, int thr
 		//std::cout << i << " " <<  mismatches[0][i] << std::endl;
 	}
 
-	if (writeHistogram) {histogramFile.close(); }
+	if (writeHistogram) {
+		histogramFile.close();
+		histogramFileMM.close(); 
+	}
 	return -0.75*log(1.0-(4.0/3.0)*(mm/length));
 }

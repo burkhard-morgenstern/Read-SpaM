@@ -180,7 +180,7 @@ void writeDmatToFile(std::vector<std::vector<double> > dmat, std::vector<Sequenc
 int main(int argc, char *argv[]){
 	if(argc < 2)
 	{
-		printHelp();		
+		printHelp();
 		exit (EXIT_FAILURE);
 	}
 	parseParameters(argc,  argv);
@@ -190,7 +190,6 @@ int main(int argc, char *argv[]){
 		seed = Seed(weight,dontCare);
 	}
 	else {
-		std::cout << "Using seed: " << seedPattern << std::endl;
 		seed = Seed(weight,dontCare,seedPattern);
 	}
 	
