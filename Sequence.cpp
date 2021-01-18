@@ -251,6 +251,7 @@ double Sequence::compareSequences(Sequence & qry, Seed & s, int threads, int thr
 		int tId=omp_get_thread_num();
 		// std::cout << "Calculating for thread: " << tId << std::endl;
 		int32_t score;
+		int32_t mismatches_count;
 		Bucket b(	sortedWords.begin() + firstBuckets[i-1], sortedWords.begin() + firstBuckets[i], qry.sortedWords.begin() + qry.firstBuckets[i-1], qry.sortedWords.begin() + qry.firstBuckets[i],
 					qry.sortedWordsRev.begin() + qry.firstBucketsRev[i-1], qry.sortedWordsRev.begin() + qry.firstBucketsRev[i]);
 		while(b.hasNext())
@@ -265,8 +266,9 @@ double Sequence::compareSequences(Sequence & qry, Seed & s, int threads, int thr
 						if(s.fillDontCareScore(dontCareQry, &qry.seq[startS2->getPos()]))
 						{	
 							score=s.getScore(dontCareRef, dontCareQry);
+							mismatches_count=s.getMismatches(dontCareRef, dontCareQry);
 							if (writeHistogram) { scores[tId][score]++;}
-							if (writeHistogram) { mismatches_hist[tId][score]++;}
+							if (writeHistogram) { mismatches_hist[tId][mismatches_count]++;}
 							if(score>threshold)
 							{	
 								char mm=0;
@@ -283,8 +285,9 @@ double Sequence::compareSequences(Sequence & qry, Seed & s, int threads, int thr
 						if(s.fillDontCareScore(dontCareQry, &qry.seqRev[startS2Rev->getPos()]))
 						{
 							score=s.getScore(dontCareRef, dontCareQry);
+							mismatches_count=s.getMismatches(dontCareRef, dontCareQry);
 							if (writeHistogram) {scores[tId][score]++; }
-							if (writeHistogram) {mismatches_hist[tId][score]++; }
+							if (writeHistogram) {mismatches_hist[tId][mismatches_count]++; }
 							if(score>threshold)
 							{
 								char mm=0;
@@ -325,11 +328,14 @@ double Sequence::compareSequences(Sequence & qry, Seed & s, int threads, int thr
 				mismatches_hist[0][it->first]+=mismatches_hist[t][it->second];
 			}
 		}
-		std::map<int32_t, int32_t>::iterator it2 = mismatches_hist[0].begin();
-		for(std::map<int32_t, int32_t>::iterator it = scores[0].begin();  it != scores[0].end(); it++, it2++)
+		
+		for(std::map<int32_t, int32_t>::iterator it = scores[0].begin();  it != scores[0].end(); it++)
 		{
 				histogramFile << it->first << " " <<  it->second << std::endl;
-				histogramFileMM << it2->first << " " <<  it2->second << std::endl;
+		}
+		for(std::map<int32_t, int32_t>::iterator it = mismatches_hist[0].begin();  it != mismatches_hist[0].end(); it++)
+		{
+				histogramFileMM << it->first << " " <<  it->second << std::endl;
 		}
 	}
 
