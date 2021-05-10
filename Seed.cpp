@@ -1,6 +1,6 @@
 #include "Seed.h"
 
-unsigned char Seed::alphabet[] = { 0 };
+std::map<char,int> Seed::alphabet;
 unsigned char Seed::alphabetRev[] = { 0 };
 char Seed::score[4][4] ={{91,-114,-31,-123},
 						{-114, 100, -125, -31},
@@ -151,22 +151,6 @@ int32_t Seed::getScore (std::vector<char> & dontCareRef, std::vector<char> & don
 		score += Seed::score[dontCareRef[i]][dontCareQry[i]];
 	}
 	return score;
-}
-
-bool Seed::fillDontCare(std::vector<char> & vec, char * seq)
-{
-	for(uint32_t i = 0; i < length; i++)
-	{
-		if( *(seq + i) == '$')
-			return false;
-	}
-
-	for(uint32_t i = 0; i < dontCare; i++)
-	{
-		vec[i] = *(seq + dontCarePos[i]);
-	}
-
-	return true;
 }
 
 bool Seed::fillDontCareScore(std::vector<char> & vec, char * seq)

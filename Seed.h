@@ -6,6 +6,7 @@
 #include <string>
 #include <iostream> 
 #include <stdint.h>
+#include <map>
 #include "pattern.h"
 
 
@@ -39,7 +40,7 @@ class Seed{
 		void getNextWord(uint32_t &, char *);
 
 		static void init();
-		static unsigned char alphabet[MAX_BUCKETS];
+		static std::map<char,int> alphabet;
 		static unsigned char alphabetRev[MAX_BUCKETS];
 		static char score[4][4];
 };

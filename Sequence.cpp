@@ -11,8 +11,9 @@ Sequence::Sequence(std::string header, std::string & seqLine)
 		if(!std::isspace(*it))
 		{
 			char c = std::toupper(*it);
-			if(c == 'A' || c == 'T' || c == 'G' || c == 'C' || c == 'N')
+			if(c == 'A' || c == 'T' || c == 'G' || c == 'C' || c == '$') {
 				seq.push_back(c);
+			}
 		}
 	}
 	seqRev.reserve(seq.size());
@@ -24,7 +25,7 @@ Sequence::Sequence(std::string header, std::string & seqLine)
 			case 'C': seqRev.push_back('G');break;
 			case 'G': seqRev.push_back('C');break;
 			case 'T': seqRev.push_back('A');break;
-			case 'N': seqRev.push_back('N');break;
+			case '$': seqRev.push_back('$');break;
 			default: exit(-1);
 		}
 	}
@@ -60,7 +61,7 @@ std::vector<Sequence> Sequence::read(std::string list)
 			std::getline(infile, line);
 			std::getline(infile, line, '>');
 			seq += line;
-			seq += "N";
+			seq += "$";
     	}
     	sequences.push_back(Sequence(header, seq));
     }
